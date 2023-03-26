@@ -2,7 +2,7 @@
 
 This robot uses RPA.Assistant and RPA.OpenAI libraries to create XPath selectors for `Input` and/or `Button` web elements.
 
-** NOTE: This is experimental, and a demonstration of potential capabnilities of Generative AI models. There are plenty of situations where this example will not work. We have published this as a portal example to promote discussion and learning, not to suggest that this is production ready code.**
+**NOTE: This is experimental, and a demonstration of potential capabnilities of Generative AI models. There are plenty of situations where this example will not work. We have published this as a portal example to promote discussion and learning, not to suggest that this is production ready code.**
 
 This Assistant Robot:
 
