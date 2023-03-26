@@ -11,9 +11,7 @@ Library    String
 Suite Setup   Auth to OpenAI
 
 *** Variables ***
-${prompt}    Create the most reliable possible xpath locators for all of the web elements in the html data. Prefer short and simple one's, but if the "id" or "name" value seems random and might be a dynamic value, prefer some other approach. Write the results into a simple json file without nesting or any additional comments or characters. Give the locators good names based on programming best practices. Html: \n 
-# Following prompt is very likely to produce non working locators in https://rpachallenge.com to demonstrate the conversational feature.
-#${prompt}    Find individual xpath locators based on the id attributes for all of the elements in the html data. Write the results into a json file without any additional comments. Give the locators good names. Html: \n 
+${prompt}    Create the most reliable possible xpath locators for all of the web elements in the html data. Prefer short and simple one's, but if the "id" or "name" value seems random and might be a dynamic value, prefer some other approach. Write the results into a simple json file without nesting or any additional comments or characters. Give the locators good names based on programming best practices. Html: \n
 ${prompt_retry}    Following locators didn't work, try again with another strategy. Update the new locators to the json response without any additional info or extra characters. Keep the json non nested and simple.
 &{xpath}       Buttons=//button    Inputs=//input    Buttons & Inputs=//input | //button
 ${correct_count}    ${0}
@@ -32,7 +30,7 @@ Minimal task
     ...    location=Center
 
 *** Keywords ***
-Auth to OpenAI 
+Auth to OpenAI
     # You can also authenticate to OpenAI without using the Robocorp Vault,
     # by following keyword but it is bad for security.
     # Authorize To Openai   api_key=<your_api_key>
@@ -42,17 +40,20 @@ Auth to OpenAI
 Display Main Menu
     # Let's clear the conversation history in the main page.
     ${conversation}    Set variable   None
+
     Set Suite Variable    ${conversation}
     ${incorrect_existed}    Set Variable   no
-    Set Suite Variable    ${incorrect_existed} 
+    Set Suite Variable    ${incorrect_existed}
     Clear Dialog
+
+    # Add elements to the Assistant dialog.
     Add Image    ${CURDIR}${/}logo.png   width=40   height=40
     Add Heading    GPT - HTML selector Guesser
-    Add Text Input    input_url    Url to search from    
+    Add Text Input    input_url    Url to search from
     Add Drop-Down     locators    Buttons,Inputs,Buttons & Inputs    label=Selector type
     Add Drop-Down     model    gpt-3.5-turbo,gpt-4    label=Select the GPT model
-    Add Text Input    element_limit    Number of elements searched. Adjust if token limit is reached.    default=100 
-    Add Text Input    sleep_time     Seconds to wait for user login or other actions.    default=0 
+    Add Text Input    element_limit    Number of elements searched. Adjust if token limit is reached.    default=100
+    Add Text Input    sleep_time     Seconds to wait for user login or other actions.    default=0
     Add Next Ui Button    Get locators    Window Locator Results
     Add Submit Buttons    buttons=Close    default=Close
 
@@ -75,7 +76,7 @@ Window Locator Results
         ${commented_result}  ${validated_result}   Validate results    ${response_from_GPT}
         Add Text    ${commented_result}
     ELSE
-        ${validated_result}  Set Variable    No elements found from the website: ${form}[locators]  
+        ${validated_result}  Set Variable    No elements found from the website: ${form}[locators]
     END
     Add Text    ${validated_result}   size=Large
     IF    '${incorrect_existed}' == 'yep'
@@ -93,7 +94,7 @@ Find the Elements
     ${counter}   Set Variable   ${0}
     Open Browser    url=${form}[input_url]
     Sleep   ${form}[sleep_time]
-    ${elements}   Get Elements    ${xpath}[${form}[locators]] 
+    ${elements}   Get Elements    ${xpath}[${form}[locators]]
     ${element_count}    Get Element Count    ${xpath}[${form}[locators]]
     IF    ${element_count} > ${0}
         Create File    output/element_htmls.txt    overwrite=True
@@ -115,20 +116,20 @@ Find the Elements
 
 Create first locators
     ${html}    Read File    output/element_htmls.txt
-    Log To Console    \n\n Waiting for OpenAI \n   
+    Log To Console    \n\n Waiting for OpenAI \n
     ${incorrect_existed}   Set Variable   no
     TRY
-        ${response}    Chat Completion to get XPaths   ${prompt}   ${html} 
-        ${response}    Replace String   ${response}    \n\n    ${EMPTY}  
+        ${response}    Chat Completion to get XPaths   ${prompt}   ${html}
+        ${response}    Replace String   ${response}    \n\n    ${EMPTY}
         Create File    output/locators.json    ${response}    overwrite=True
     EXCEPT
         Error happened    ChatGPT gave an error.
     END
-    [Return]    ${response} 
+    [Return]    ${response}
 
 Chat Completion to get XPaths
-    [Arguments]    ${prompt}   ${values_to_gpt}   
-    Log To Console    \n${prompt} \n ${values_to_gpt} 
+    [Arguments]    ${prompt}   ${values_to_gpt}
+    Log To Console    \n${prompt} \n ${values_to_gpt}
     ${response}    @{conversation}    Chat Completion Create
     ...    user_content=${prompt} ${values_to_gpt}
     ...    conversation=${conversation}
@@ -138,14 +139,14 @@ Chat Completion to get XPaths
 
 Validate results
     [Arguments]   ${response_from_GPT}
-    # For demo purposes page reload on rpachallenge.com site to see that dynamic IDs doesn't work. 
+    # For demo purposes page reload on rpachallenge.com site to see that dynamic IDs doesn't work.
     ${url}   Get Url
     Run Keyword If    '${url}' == 'https://rpachallenge.com/'
     ...    Reload
     TRY
         &{json}    Convert String to JSON    ${response_from_GPT}
-    EXCEPT    
-        Error happened    ChatGPT gave wrongly formatted response. 
+    EXCEPT
+        Error happened    ChatGPT gave wrongly formatted response.
     END
     ${incorrect_locators}   Set Variable    ${EMPTY}
     ${commented_result}   Read File    output/locators.json
@@ -164,13 +165,13 @@ Validate results
     END
     Set Suite Variable   ${incorrect_locators}
     ${validated_result}   Set Variable   Locators matching the elements on the site: ${correct_count}/${locator_total_count}
-    [Return]    ${commented_result}   ${validated_result}   
+    [Return]    ${commented_result}   ${validated_result}
 
 Retry Window
-    [Arguments]    ${form}   
+    [Arguments]    ${form}
     Clear Dialog
     Add Heading    Locator Results   size=Medium
-    ${response_from_GPT}    Chat Completion to get XPaths    ${prompt_retry}    ${incorrect_locators}  
+    ${response_from_GPT}    Chat Completion to get XPaths    ${prompt_retry}    ${incorrect_locators}
     Create File    output/locators.json    ${response_from_GPT}    overwrite=True
     ${commented_result}  ${validated_result}   Validate results    ${response_from_GPT}
     Add Text    ${commented_result}
@@ -182,7 +183,7 @@ Retry Window
 
 Copy to Clipboard
     [Arguments]   ${response_from_GPT}
-    Set Clipboard Value    ${response_from_GPT}   
+    Set Clipboard Value    ${response_from_GPT}
 
 Error happened
     [Arguments]    ${response}
@@ -192,4 +193,3 @@ Error happened
     Add Next Ui Button    Back    Back To Main Menu
     Refresh Dialog
     Close Browser
-    
