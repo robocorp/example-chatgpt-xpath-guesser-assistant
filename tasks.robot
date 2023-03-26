@@ -11,7 +11,7 @@ Library    String
 Suite Setup   Auth to OpenAI
 
 *** Variables ***
-${prompt}    Create the most reliable possible xpath locators for all of the web elements in the html data. Prefer short and simple one's, but if the "id" or "name" value seems random and might be a dynamic value, prefer some other approach. Write the results into a simple json file without nesting or any additional comments or characters. Give the locators good names based on programming best practices. Html: \n
+${prompt}    Create the most reliable possible xpath locators for all of the web elements in the html data. Prefer short and simple one's, but if the "id" or "name" value seems random and might be a dynamic value, prefer some other approach. Write the results into a simple json file without nesting or any additional comments or characters. Give the locators good names based on programming best practices. Dont use period before XPath // characters. Html: \n
 ${prompt_retry}    Following locators didn't work, try again with another strategy. Update the new locators to the json response without any additional info or extra characters. Keep the json non nested and simple.
 &{xpath}       Buttons=//button    Inputs=//input    Buttons & Inputs=//input | //button
 ${correct_count}    ${0}
